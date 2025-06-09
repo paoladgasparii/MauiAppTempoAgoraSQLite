@@ -4,13 +4,6 @@
              x:Class="MauiAppTempoAgoraSQLite.Views.ListaTempo"
              Title="Tempo Agora">
 
-    <!-- Define os itens da barra de ferramentas da página -->
-    <ContentPage.ToolbarItems>
-
-        <!-- Item da barra de ferramentas para adicionar um novo produto -->
-        <ToolbarItem Text="Adicionar" Clicked="ToolbarItem_Clicked"/>
-    </ContentPage.ToolbarItems>
-
     <!-- Recursos da página, neste caso, um estilo para o tipo 'Label' -->
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -34,24 +27,20 @@
             <!-- Lista de produtos com suporte para atualização de pull-to-refresh -->
             <ListView x:Name="lst_tempos" 
                       IsPullToRefreshEnabled="True"
-                      Refreshing="lst_tempos_Refreshing"
-                      ItemSelected="lst_tempos_ItemSelected">
+                      Refreshing="lst_tempos_Refreshing">
 
                 <!-- Cabeçalho da lista com informações sobre cada coluna -->
                 <ListView.Header>
-                    <Grid ColumnDefinitions="30, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
-                          BackgroundColor="{StaticResource Gray100}">
+                    <Grid ColumnDefinitions="30, 90, 90, 160, 160, 90, 100, 110"
+                        BackgroundColor="{StaticResource Gray100}">
                         <Label Grid.Column="0" Text="ID" Padding="5" FontAttributes="Bold" />
                         <Label Grid.Column="1" Text="Longitude" FontAttributes="Bold" />
                         <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" />
                         <Label Grid.Column="3" Text="Temperatura Mínima" FontAttributes="Bold" />
                         <Label Grid.Column="4" Text="Temperatura Máxima" FontAttributes="Bold" />
-                        <Label Grid.Column="5" Text="Visibilidade" FontAttributes="Bold" />
-                        <Label Grid.Column="6" Text="Velocidade" FontAttributes="Bold" />
-                        <Label Grid.Column="7" Text="Temperatura Máxima" FontAttributes="Bold" />
-                        <Label Grid.Column="8" Text="Descrição" FontAttributes="Bold" />
-                        <Label Grid.Column="9" Text="Amanhecer" FontAttributes="Bold" />
-                        <Label Grid.Column="10" Text="Anoitecer" FontAttributes="Bold" />
+                        <Label Grid.Column="5" Text="Descrição" FontAttributes="Bold" />
+                        <Label Grid.Column="6" Text="Nascer do sol" FontAttributes="Bold" />
+                        <Label Grid.Column="7" Text="Pôr do sol" FontAttributes="Bold" />
                     </Grid>
                 </ListView.Header>
 
@@ -65,12 +54,15 @@
                             </ViewCell.ContextActions>
 
                             <!-- Exibe os dados do produto em um grid com 5 colunas -->
-                            <Grid ColumnDefinitions="30, 100, 80, 50, 90">
+                            <Grid ColumnDefinitions="30, 90, 90, 160, 160, 90, 100, 110">
                                 <Label Grid.Column="0" Text="{Binding Id}" />
-                                <Label Grid.Column="1" Text="{Binding Descricao}" />
-                                <Label Grid.Column="2" Text="{Binding Preco, StringFormat='{}{0:c}'}" />
-                                <Label Grid.Column="3" Text="{Binding Quantidade}" />
-                                <Label Grid.Column="4" Text="{Binding Total, StringFormat='{}{0:c}'}" />
+                                <Label Grid.Column="1" Text="{Binding lon}"/>
+                                <Label Grid.Column="2" Text="{Binding lat}"/>
+                                <Label Grid.Column="3" Text="{Binding temp_min}"/>
+                                <Label Grid.Column="4" Text="{Binding temp_max}"/>
+                                <Label Grid.Column="5" Text="{Binding description}"/>
+                                <Label Grid.Column="6" Text="{Binding sunrise}"  />
+                                <Label Grid.Column="7" Text="{Binding sunset}" />
                             </Grid>
                         </ViewCell>
                     </DataTemplate>

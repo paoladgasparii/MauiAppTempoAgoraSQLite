@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SQLite;
 using MauiAppTempoAgoraSQLite.Models;
 
-namespace MauiAppMinhasCompras.Helpers
+namespace MauiAppTempoAgoraSQLite.Helpers
 {
     public class SQLiteDatabaseHelper
     {
