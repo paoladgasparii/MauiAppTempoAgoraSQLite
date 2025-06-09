@@ -2,12 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MauiAppTempoAgoraSQLite.Views.ListaTempo"
-             Title="Minhas Compras">
+             Title="Tempo Agora">
 
     <!-- Define os itens da barra de ferramentas da página -->
     <ContentPage.ToolbarItems>
-        <!-- Item da barra de ferramentas para somar os produtos -->
-        <ToolbarItem Text="Somar" Clicked="ToolbarItem_Clicked_1" />
 
         <!-- Item da barra de ferramentas para adicionar um novo produto -->
         <ToolbarItem Text="Adicionar" Clicked="ToolbarItem_Clicked"/>
@@ -28,26 +26,32 @@
         <!-- Barra de pesquisa para filtrar os produtos -->
         <SearchBar x:Name="txt_search" 
                    Margin="-15, 0, 0, 0"
-                   Placeholder="Busca de Produtos" 
+                   Placeholder="Busca de Tempos" 
                    TextChanged="txt_search_TextChanged"/>
 
         <!-- Contêiner Frame que envolve a lista de produtos -->
         <Frame Padding="0" Margin="10" VerticalOptions="FillAndExpand">
             <!-- Lista de produtos com suporte para atualização de pull-to-refresh -->
-            <ListView x:Name="lst_produtos" 
+            <ListView x:Name="lst_tempos" 
                       IsPullToRefreshEnabled="True"
-                      Refreshing="lst_produtos_Refreshing"
-                      ItemSelected="lst_produtos_ItemSelected">
+                      Refreshing="lst_tempos_Refreshing"
+                      ItemSelected="lst_tempos_ItemSelected">
 
                 <!-- Cabeçalho da lista com informações sobre cada coluna -->
                 <ListView.Header>
-                    <Grid ColumnDefinitions="30, 100, 80, 50, 90"
+                    <Grid ColumnDefinitions="30, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50"
                           BackgroundColor="{StaticResource Gray100}">
                         <Label Grid.Column="0" Text="ID" Padding="5" FontAttributes="Bold" />
-                        <Label Grid.Column="1" Text="Descrição" FontAttributes="Bold" />
-                        <Label Grid.Column="2" Text="Preço" FontAttributes="Bold" />
-                        <Label Grid.Column="3" Text="Qnt" FontAttributes="Bold" />
-                        <Label Grid.Column="4" Text="Total" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="Longitude" FontAttributes="Bold" />
+                        <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" />
+                        <Label Grid.Column="3" Text="Temperatura Mínima" FontAttributes="Bold" />
+                        <Label Grid.Column="4" Text="Temperatura Máxima" FontAttributes="Bold" />
+                        <Label Grid.Column="5" Text="Visibilidade" FontAttributes="Bold" />
+                        <Label Grid.Column="6" Text="Velocidade" FontAttributes="Bold" />
+                        <Label Grid.Column="7" Text="Temperatura Máxima" FontAttributes="Bold" />
+                        <Label Grid.Column="8" Text="Descrição" FontAttributes="Bold" />
+                        <Label Grid.Column="9" Text="Amanhecer" FontAttributes="Bold" />
+                        <Label Grid.Column="10" Text="Anoitecer" FontAttributes="Bold" />
                     </Grid>
                 </ListView.Header>
 
