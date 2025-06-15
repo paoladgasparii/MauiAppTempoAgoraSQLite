@@ -49,6 +49,16 @@ namespace MauiAppTempoAgoraSQLite
                 })
             });
 
+            // Adiciona um botão na toolbar para remover tempos
+            listaTempo.ToolbarItems.Add(new ToolbarItem
+            {
+                Text = "Remover",
+                Command = new Command(async () =>
+                {
+                    await listaTempo.Navigation.PushAsync(new Views.RemoverTempo());
+                })
+            });
+
             MainPage = new NavigationPage(listaTempo);
         }
     }

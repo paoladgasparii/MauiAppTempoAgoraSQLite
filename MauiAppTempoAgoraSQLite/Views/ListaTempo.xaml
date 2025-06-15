@@ -24,13 +24,6 @@
                    Placeholder="Buscar por cidade ou descrição" 
                    TextChanged="txt_search_TextChanged"/>
 
-        <!-- Instrução para o usuário sobre como remover itens -->
-        <Label Text="Toque em um item para removê-lo" 
-               FontSize="12" 
-               TextColor="Gray" 
-               HorizontalOptions="Center" 
-               Margin="0,0,0,5"/>
-
         <!-- Contêiner Frame que envolve a lista de tempos -->
         <Frame Padding="5" Margin="10" VerticalOptions="FillAndExpand" BackgroundColor="white">
             <!-- Lista de tempos com suporte para atualização de pull-to-refresh -->
@@ -45,7 +38,7 @@
                 <!-- Cabeçalho da lista com informações sobre cada coluna -->
                 <ListView.Header>
                     <Grid ColumnDefinitions="40, 100, 80, 80, 80, 80, 120, 60, 60"
-                          BackgroundColor="{StaticResource Primary}"
+                          BackgroundColor="#9400D3"
                           Padding="5"
                           HeightRequest="50">
                         <Label Grid.Column="0" Text="ID" FontAttributes="Bold" TextColor="White" FontSize="10" />
