@@ -19,14 +19,14 @@ namespace MauiAppTempoAgoraSQLite.Helpers
             // Inicializa a conexão com o banco de dados SQLite usando o caminho fornecido
             _conn = new SQLiteAsyncConnection(path);
 
-            // Cria a tabela 'Produto' caso ainda não exista
+            // Cria a tabela 'Tempo' caso ainda não exista
             _conn.CreateTableAsync<Tempo>().Wait();
         }
 
-        // Método para inserir um novo produto no banco de dados
+        // Método para inserir um novo tempo no banco de dados
         public Task<int> Insert(Tempo t)
         {
-            // Insere o produto 'p' no banco de dados
+            // Insere o tempo 't' no banco de dados
             return _conn.InsertAsync(t);
         }
 
@@ -50,18 +50,18 @@ namespace MauiAppTempoAgoraSQLite.Helpers
             return _conn.Table<Tempo>().DeleteAsync(i => i.Id == id);
         }
 
-        // Método para obter todos os produtos do banco de dados
+        // Método para obter todos os tempos do banco de dados
         public Task<List<Tempo>> GetAll()
         {
             // Retorna todos os tempos da tabela 'Tempo'
             return _conn.Table<Tempo>().ToListAsync();
         }
 
-        // Método para buscar tempos no banco de dados pela descricao
+        // Método para buscar tempos no banco de dados pela descrição
         public Task<List<Tempo>> Search(string q)
         {
             // Comando SQL para realizar a busca de tempos com a descrição que contenha o texto 'q'
-            string sql = "SELECT * Tempo WHERE description LIKE '%" + q + "%'";
+            string sql = "SELECT * FROM Tempo WHERE description LIKE '%" + q + "%'";
 
             // Executa a consulta SQL e retorna os resultados
             return _conn.QueryAsync<Tempo>(sql);

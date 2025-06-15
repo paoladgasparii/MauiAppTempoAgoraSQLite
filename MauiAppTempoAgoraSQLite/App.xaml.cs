@@ -20,7 +20,7 @@ namespace MauiAppTempoAgoraSQLite
                     string path = Path.Combine(
                         Environment.GetFolderPath(
                           Environment.SpecialFolder.LocalApplicationData),
-                        "banco_sqlite_compras.db3"); // Nome do arquivo do banco de dados
+                        "banco_sqlite_tempos.db3"); // Nome do arquivo do banco de dados
 
                     // Cria uma nova instância de SQLiteDatabaseHelper passando o caminho do banco de dados
                     _db = new SQLiteDatabaseHelper(path);
@@ -36,8 +36,20 @@ namespace MauiAppTempoAgoraSQLite
         {
             InitializeComponent(); // Inicializa os componentes do aplicativo
 
-            // Define a página principal do aplicativo, utilizando uma NavigationPage com a tela de ListaProduto
-            MainPage = new NavigationPage(new Views.ListaTempo());
+            // Define a página principal do aplicativo, utilizando uma NavigationPage com a tela de ListaTempo
+            var listaTempo = new Views.ListaTempo();
+
+            // Adiciona um botão na toolbar para adicionar novo tempo
+            listaTempo.ToolbarItems.Add(new ToolbarItem
+            {
+                Text = "Adicionar",
+                Command = new Command(async () =>
+                {
+                    await listaTempo.Navigation.PushAsync(new Views.NovoTempo());
+                })
+            });
+
+            MainPage = new NavigationPage(listaTempo);
         }
     }
 }

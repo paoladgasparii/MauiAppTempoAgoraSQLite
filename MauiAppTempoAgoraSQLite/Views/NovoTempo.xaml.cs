@@ -1,155 +1,164 @@
 using MauiAppTempoAgoraSQLite.Models;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+using MauiAppTempoAgora.Services;
 
 namespace MauiAppTempoAgoraSQLite.Views
 {
     public partial class NovoTempo : ContentPage
     {
+        private Tempo tempoAtual;
+
         public NovoTempo()
         {
             InitializeComponent();
+            tempoAtual = new Tempo();
         }
 
-        private async void ToolbarItem_Clicked(object sender, EventArgs e)
-        {
-            try
-            {
-                // Validação básica
-                if (string.IsNullOrWhiteSpace(txt_cidade.Text))
-                {
-                    await DisplayAlert("Atenção", "Informe o nome da cidade", "OK");
-                    return;
-                }
-
-                // Criação de um novo objeto Tempo
-                Tempo t = new Tempo
-                {
-                    // Ajuste estas propriedades conforme sua classe Tempo
-                    Cidade = txt_cidade.Text,
-                    DataService = DateTime.Now
-                    // Adicione outras propriedades necessárias
-                };
-
-                // Insere o novo tempo no banco de dados
-                await App.Db.Insert(t);
-
-                // Exibe uma mensagem de sucesso
-                await DisplayAlert("Sucesso!", "Registro Inserido", "Ok");
-
-                // Limpa o campo após salvar
-                txt_cidade.Text = string.Empty;
-                lbl_res.Text = string.Empty;
-            }
-            catch (Exception ex)
-            {
-                // Exibe um alerta com a mensagem de erro
-                await DisplayAlert("Ops", ex.Message, "OK");
-            }
-        }
-
-        private async void Button_Clicked_Previsao(object sender, EventArgs e)
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(txt_cidade.Text))
-                {
-                    Tempo? t = await DataService.GetPrevisao(txt_cidade.Text);
-                    if (t != null)
-                    {
-                        string dados_previsao = $"Latitude: {t.lat} \n" +
-                                               $"Longitude: {t.lon} \n" +
-                                               $"Nascer do Sol: {t.sunrise} \n" +
-                                               $"Pôr do Sol: {t.sunset} \n" +
-                                               $"Temp Máx: {t.temp_max} \n" +
-                                               $"Temp Mín: {t.temp_min} \n";
-
-                        lbl_res.Text = dados_previsao;
-
-                        string mapa = $"https://embed.windy.com/embed.html?" +
-                                    $"type=map&location=coordinates&metricRain=mm&metricTemp=°C" +
-                                    $"&metricWind=km/h&zoom=5&overlay=wind&product=ecmwf&level=surface" +
-                                    $"&lat={t.lat.ToString().Replace(",", ".")}&lon=" +
-                                    $"{t.lon.ToString().Replace(",", ".")}";
-
-                        wv_mapa.Source = mapa;
-                        Debug.WriteLine(mapa);
-                    }
-                    else
-                    {
-                        lbl_res.Text = "Sem dados de Previsão";
-                    }
-                }
-                else
-                {
-                    lbl_res.Text = "Preencha a cidade";
-                }
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Ops", ex.Message, "OK");
-            }
-        }
-
+        // Botão para obter localização atual do usuário
         private async void Button_Clicked_Localizacao(object sender, EventArgs e)
         {
             try
             {
-                GeolocationRequest request = new GeolocationRequest(
-                    GeolocationAccuracy.Medium,
-                    TimeSpan.FromSeconds(10)
-                );
-
-                Location? local = await Geolocation.Default.GetLocationAsync(request);
-
-                if (local != null)
+                // Solicita permissão de localização
+                var location = await Geolocation.GetLocationAsync(new GeolocationRequest
                 {
-                    string local_disp = $"Latitude: {local.Latitude} \n" +
-                                      $"Longitude: {local.Longitude}";
+                    DesiredAccuracy = GeolocationAccuracy.Medium,
+                    Timeout = TimeSpan.FromSeconds(10)
+                });
 
-                    lbl_coords.Text = local_disp;
+                if (location != null)
+                {
+                    lbl_coords.Text = $"Lat: {location.Latitude}, Lon: {location.Longitude}";
 
-                    // Pega nome da cidade que está nas coordenadas
-                    await GetCidade(local.Latitude, local.Longitude);
+                    // Armazena as coordenadas no objeto tempo
+                    tempoAtual.lat = location.Latitude;
+                    tempoAtual.lon = location.Longitude;
+
+                    // Carrega o mapa com a localização atual
+                    CarregarMapa(location.Latitude, location.Longitude);
                 }
                 else
                 {
-                    lbl_coords.Text = "Nenhuma localização";
+                    await DisplayAlert("Erro", "Não foi possível obter a localização", "OK");
                 }
-            }
-            catch (FeatureNotSupportedException fnsEx)
-            {
-                await DisplayAlert("Erro: Dispositivo não suporta", fnsEx.Message, "OK");
-            }
-            catch (FeatureNotEnabledException fneEx)
-            {
-                await DisplayAlert("Erro: Localização Desabilitada", fneEx.Message, "OK");
-            }
-            catch (PermissionException pEx)
-            {
-                await DisplayAlert("Erro: Permissão da Localização", pEx.Message, "OK");
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", ex.Message, "OK");
+                await DisplayAlert("Erro", $"Erro ao obter localização: {ex.Message}", "OK");
             }
         }
 
-        private async Task GetCidade(double lat, double lon)
+        // Botão para buscar previsão do tempo por cidade
+        private async void Button_Clicked_Previsao(object sender, EventArgs e)
         {
             try
             {
-                IEnumerable<Placemark> places = await Geocoding.Default.GetPlacemarksAsync(lat, lon);
-                Placemark? place = places.FirstOrDefault();
+                string cidade = txt_cidade.Text?.Trim();
 
-                if (place != null)
+                if (string.IsNullOrEmpty(cidade))
                 {
-                    txt_cidade.Text = place.Locality ?? place.AdminArea ?? "Cidade não encontrada";
+                    await DisplayAlert("Aviso", "Digite o nome da cidade", "OK");
+                    return;
+                }
+
+                // Busca a previsão do tempo através da API
+                Tempo tempo = await DataService.GetPrevisao(cidade);
+
+                if (tempo != null)
+                {
+                    tempoAtual = tempo;
+
+                    // Exibe as informações na label
+                    lbl_res.Text = $"Cidade: {cidade}\n" +
+                                  $"Temperatura: {tempo.temp_min}°C - {tempo.temp_max}°C\n" +
+                                  $"Condição: {tempo.main}\n" +
+                                  $"Descrição: {tempo.description}\n" +
+                                  $"Vento: {tempo.speed} m/s\n" +
+                                  $"Visibilidade: {tempo.visibility}m\n" +
+                                  $"Nascer do sol: {tempo.sunrise}\n" +
+                                  $"Pôr do sol: {tempo.sunset}";
+
+                    // Carrega o mapa com a localização da cidade
+                    if (tempo.lat.HasValue && tempo.lon.HasValue)
+                    {
+                        CarregarMapa(tempo.lat.Value, tempo.lon.Value);
+                        lbl_coords.Text = $"Lat: {tempo.lat}, Lon: {tempo.lon}";
+                    }
+                }
+                else
+                {
+                    await DisplayAlert("Erro", "Não foi possível obter a previsão do tempo para esta cidade", "OK");
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro: Obtenção do nome da cidade", ex.Message, "OK");
+                await DisplayAlert("Erro", $"Erro ao buscar previsão: {ex.Message}", "OK");
+            }
+        }
+
+        // Método para carregar o mapa no WebView
+        private void CarregarMapa(double latitude, double longitude)
+        {
+            string html = $@"
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                    <style>
+                        body {{ margin: 0; padding: 0; }}
+                        #map {{ height: 100vh; width: 100%; }}
+                    </style>
+                </head>
+                <body>
+                    <div id='map'></div>
+                    <script>
+                        function initMap() {{
+                            var location = {{ lat: {latitude.ToString().Replace(',', '.')}, lng: {longitude.ToString().Replace(',', '.')} }};
+                            var map = new google.maps.Map(document.getElementById('map'), {{
+                                zoom: 12,
+                                center: location
+                            }});
+                            var marker = new google.maps.Marker({{
+                                position: location,
+                                map: map,
+                                title: 'Localização'
+                            }});
+                        }}
+                    </script>
+                    <script async defer 
+                        src='https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap'>
+                    </script>
+                </body>
+                </html>";
+
+            wv_mapa.Source = new HtmlWebViewSource { Html = html };
+        }
+
+        // Evento do botão Salvar na toolbar
+        private async void ToolbarItem_Clicked(object sender, EventArgs e)
+        {
+            try
+            {
+                // Verifica se há dados de tempo para salvar
+                if (tempoAtual == null ||
+                    (string.IsNullOrEmpty(tempoAtual.description) &&
+                     !tempoAtual.lat.HasValue &&
+                     !tempoAtual.lon.HasValue))
+                {
+                    await DisplayAlert("Aviso", "Busque uma previsão do tempo ou obtenha sua localização antes de salvar", "OK");
+                    return;
+                }
+
+                // Salva o tempo no banco de dados
+                await App.Db.Insert(tempoAtual);
+
+                await DisplayAlert("Sucesso", "Tempo salvo com sucesso!", "OK");
+
+                // Volta para a página anterior
+                await Navigation.PopAsync();
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", $"Erro ao salvar tempo: {ex.Message}", "OK");
             }
         }
     }
