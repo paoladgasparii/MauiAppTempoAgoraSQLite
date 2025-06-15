@@ -5,37 +5,33 @@ namespace MauiAppTempoAgoraSQLite.Views
 {
     public partial class RemoverTempo : ContentPage
     {
-        private ObservableCollection<Tempo> todosTempos;
-        private List<Tempo> temposSelecionados;
+        private ObservableCollection<Tempo> _todosTempos = new ObservableCollection<Tempo>();
+        private ObservableCollection<Tempo> _temposFiltrados = new ObservableCollection<Tempo>();
+        private List<Tempo> _temposSelecionados = new List<Tempo>();
 
         public RemoverTempo()
         {
             InitializeComponent();
-            todosTempos = new ObservableCollection<Tempo>();
-            temposSelecionados = new List<Tempo>();
-            cv_tempos.ItemsSource = todosTempos;
+            cv_tempos.ItemsSource = _temposFiltrados;
+            CarregarTempos();
         }
 
-        // Método chamado quando a página aparece
-        protected async override void OnAppearing()
-        {
-            await CarregarTempos();
-        }
-
-        // Carrega todos os tempos do banco de dados
-        private async Task CarregarTempos()
+        private async void CarregarTempos()
         {
             try
             {
                 var tempos = await App.Db.GetAll();
-                todosTempos.Clear();
+
+                _todosTempos.Clear();
+                _temposFiltrados.Clear();
 
                 foreach (var tempo in tempos)
                 {
-                    todosTempos.Add(tempo);
+                    _todosTempos.Add(tempo);
+                    _temposFiltrados.Add(tempo);
                 }
 
-                AtualizarContadorSelecionados();
+                AtualizarLabelSelecionados();
             }
             catch (Exception ex)
             {
@@ -43,122 +39,70 @@ namespace MauiAppTempoAgoraSQLite.Views
             }
         }
 
-        // Método chamado quando o texto da barra de pesquisa muda
-        private async void txt_search_TextChanged(object sender, TextChangedEventArgs e)
+        private void txt_search_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string termoPesquisa = e.NewTextValue;
+            var searchText = e.NewTextValue?.ToLower() ?? "";
 
-            try
+            _temposFiltrados.Clear();
+
+            var temposFiltrados = string.IsNullOrWhiteSpace(searchText)
+                ? _todosTempos
+                : _todosTempos.Where(t =>
+                    (t.cidade?.ToLower().Contains(searchText) ?? false) ||
+                    (t.description?.ToLower().Contains(searchText) ?? false));
+
+            foreach (var tempo in temposFiltrados)
             {
-                List<Tempo> temposFiltrados;
+                _temposFiltrados.Add(tempo);
+            }
+        }
 
-                if (string.IsNullOrEmpty(termoPesquisa))
+        private void CheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+        {
+            var checkBox = sender as CheckBox;
+            var tempo = checkBox?.BindingContext as Tempo;
+
+            if (tempo != null)
+            {
+                if (e.Value)
                 {
-                    // Se não há termo de pesquisa, mostra todos os tempos
-                    temposFiltrados = await App.Db.GetAll();
+                    if (!_temposSelecionados.Contains(tempo))
+                    {
+                        _temposSelecionados.Add(tempo);
+                    }
                 }
                 else
                 {
-                    // Se há termo de pesquisa, filtra os resultados
-                    temposFiltrados = await App.Db.Search(termoPesquisa);
+                    _temposSelecionados.Remove(tempo);
                 }
 
-                todosTempos.Clear();
-                foreach (var tempo in temposFiltrados)
-                {
-                    todosTempos.Add(tempo);
-                }
-
-                // Limpa a seleção ao filtrar
-                temposSelecionados.Clear();
-                AtualizarContadorSelecionados();
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Erro", $"Erro ao pesquisar: {ex.Message}", "OK");
+                AtualizarLabelSelecionados();
             }
         }
 
-        // Método chamado quando a seleção da CollectionView muda
         private void cv_tempos_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            temposSelecionados.Clear();
-
-            if (e.CurrentSelection != null)
-            {
-                foreach (Tempo tempo in e.CurrentSelection)
-                {
-                    temposSelecionados.Add(tempo);
-                }
-            }
-
-            AtualizarContadorSelecionados();
+            // Não usado mais, pois estamos usando CheckBox individualmente
         }
 
-        // Método chamado quando um CheckBox é marcado/desmarcado
-        private void CheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+        private void AtualizarLabelSelecionados()
         {
-            AtualizarContadorSelecionados();
+            var count = _temposSelecionados.Count;
+            lbl_selecionados.Text = count == 0
+                ? "Nenhum item selecionado"
+                : $"{count} item(ns) selecionado(s)";
         }
 
-        // Atualiza o contador de itens selecionados
-        private void AtualizarContadorSelecionados()
-        {
-            int quantidadeSelecionados = temposSelecionados.Count;
-
-            if (quantidadeSelecionados == 0)
-            {
-                lbl_selecionados.Text = "Nenhum item selecionado";
-                lbl_selecionados.TextColor = Colors.Gray;
-            }
-            else
-            {
-                lbl_selecionados.Text = $"{quantidadeSelecionados} item(ns) selecionado(s)";
-                lbl_selecionados.TextColor = Colors.Blue;
-            }
-        }
-
-        // Seleciona todos os itens
-        private void Button_Clicked_SelecionarTodos(object sender, EventArgs e)
-        {
-            cv_tempos.SelectionMode = SelectionMode.Multiple;
-            cv_tempos.SelectedItems.Clear();
-
-            foreach (var tempo in todosTempos)
-            {
-                cv_tempos.SelectedItems.Add(tempo);
-            }
-        }
-
-        // Desmarca todos os itens
-        private void Button_Clicked_DesmarcarTodos(object sender, EventArgs e)
-        {
-            cv_tempos.SelectedItems.Clear();
-            temposSelecionados.Clear();
-            AtualizarContadorSelecionados();
-        }
-
-        // Remove os itens selecionados
         private async void Button_Clicked_RemoverSelecionados(object sender, EventArgs e)
         {
-            if (temposSelecionados.Count == 0)
+            if (_temposSelecionados.Count == 0)
             {
-                await DisplayAlert("Aviso", "Selecione pelo menos um item para remover.", "OK");
-                return;
-            }
-        }
-
-        // Confirma a remoção via toolbar
-        private async void ToolbarItem_Clicked_Confirmar(object sender, EventArgs e)
-        {
-            if (temposSelecionados.Count == 0)
-            {
-                await DisplayAlert("Aviso", "Selecione pelo menos um item para remover.", "OK");
+                await DisplayAlert("Aviso", "Nenhum item selecionado para remoção.", "OK");
                 return;
             }
 
-            bool confirmacao = await DisplayAlert("Confirmar Remoção",
-                $"Deseja remover {temposSelecionados.Count} item(ns) selecionado(s)?",
+            var confirmacao = await DisplayAlert("Confirmação",
+                $"Deseja realmente remover {_temposSelecionados.Count} item(ns) selecionado(s)?",
                 "Sim", "Não");
 
             if (confirmacao)
@@ -167,32 +111,71 @@ namespace MauiAppTempoAgoraSQLite.Views
             }
         }
 
-        // Remove os itens selecionados do banco de dados
+        private async void Button_Clicked_SelecionarTodos(object sender, EventArgs e)
+        {
+            _temposSelecionados.Clear();
+            _temposSelecionados.AddRange(_temposFiltrados);
+
+            // Atualizar visualmente todos os checkboxes
+            await AtualizarCheckboxes(true);
+            AtualizarLabelSelecionados();
+        }
+
+        private async void Button_Clicked_LimparSelecao(object sender, EventArgs e)
+        {
+            _temposSelecionados.Clear();
+
+            // Atualizar visualmente todos os checkboxes
+            await AtualizarCheckboxes(false);
+            AtualizarLabelSelecionados();
+        }
+
+        private async Task AtualizarCheckboxes(bool isChecked)
+        {
+            // Force a refresh da CollectionView para atualizar os checkboxes
+            var source = cv_tempos.ItemsSource;
+            cv_tempos.ItemsSource = null;
+            cv_tempos.ItemsSource = source;
+        }
+
         private async Task RemoverItensSelecionados()
         {
             try
             {
-                int removidos = 0;
-
-                foreach (var tempo in temposSelecionados.ToList())
+                foreach (var tempo in _temposSelecionados.ToList())
                 {
                     await App.Db.Delete(tempo.Id);
-                    removidos++;
+                    _todosTempos.Remove(tempo);
+                    _temposFiltrados.Remove(tempo);
                 }
 
-                await DisplayAlert("Sucesso", $"{removidos} item(ns) removido(s) com sucesso!", "OK");
+                _temposSelecionados.Clear();
+                AtualizarLabelSelecionados();
 
-                // Recarrega a lista
-                await CarregarTempos();
-
-                // Limpa a seleção
-                cv_tempos.SelectedItems.Clear();
-                temposSelecionados.Clear();
-                AtualizarContadorSelecionados();
+                await DisplayAlert("Sucesso", "Itens removidos com sucesso!", "OK");
             }
             catch (Exception ex)
             {
                 await DisplayAlert("Erro", $"Erro ao remover itens: {ex.Message}", "OK");
+            }
+        }
+
+        private async void ToolbarItem_Clicked_Confirmar(object sender, EventArgs e)
+        {
+            if (_temposSelecionados.Count == 0)
+            {
+                await DisplayAlert("Aviso", "Nenhum item selecionado para remoção.", "OK");
+                return;
+            }
+
+            var confirmacao = await DisplayAlert("Confirmação Final",
+                $"Esta ação irá remover permanentemente {_temposSelecionados.Count} item(ns). Continuar?",
+                "Confirmar", "Cancelar");
+
+            if (confirmacao)
+            {
+                await RemoverItensSelecionados();
+                await Navigation.PopAsync(); // Voltar para a tela anterior
             }
         }
     }
