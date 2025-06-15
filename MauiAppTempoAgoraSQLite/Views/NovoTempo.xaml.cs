@@ -1,5 +1,6 @@
-using MauiAppTempoAgoraSQLite.Models;
 using MauiAppTempoAgora.Services;
+using MauiAppTempoAgoraSQLite.Models;
+using System.Globalization;
 
 namespace MauiAppTempoAgoraSQLite.Views
 {
@@ -10,7 +11,12 @@ namespace MauiAppTempoAgoraSQLite.Views
         public NovoTempo()
         {
             InitializeComponent();
-            tempoAtual = new Tempo();
+
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
+
+            Title = "Novo Tempo";
+            txt_cidade.Placeholder = "Digite o nome da cidade";
         }
 
         // Botão para obter localização atual do usuário

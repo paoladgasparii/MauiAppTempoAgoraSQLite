@@ -1,112 +1,115 @@
 using MauiAppTempoAgoraSQLite.Models;
 
-namespace MauiAppTempoAgoraSQLite.Views
+namespace MauiAppTempoAgoraSQLite.Views;
+
+public partial class ListaTempo : ContentPage
 {
-    public partial class ListaTempo : ContentPage
+    public ListaTempo()
     {
-        public ListaTempo()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+    }
 
-        // Método chamado quando a página aparece
-        protected async override void OnAppearing()
-        {
-            // Carrega a lista de tempos do banco de dados
-            await CarregarListaTempos();
-        }
+    // Método chamado quando a página aparece
+    protected async override void OnAppearing()
+    {
+        base.OnAppearing();
+        await CarregarLista();
+    }
 
-        // Método para carregar todos os tempos do banco de dados
-        private async Task CarregarListaTempos()
+    // Método para carregar a lista de tempos do banco de dados
+    private async Task CarregarLista()
+    {
+        try
         {
-            try
+            List<Tempo> tempos = await App.Db.GetAll();
+            lst_tempos.ItemsSource = tempos;
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro ao carregar lista: {ex.Message}", "OK");
+        }
+    }
+
+    // Evento chamado quando o texto da barra de pesquisa muda
+    private async void txt_search_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        try
+        {
+            string busca = e.NewTextValue;
+
+            if (string.IsNullOrEmpty(busca))
             {
-                // Busca todos os tempos no banco de dados
-                List<Tempo> tempos = await App.Db.GetAll();
-
-                // Define a fonte de dados da ListView
+                // Se a busca estiver vazia, carrega todos os tempos
+                await CarregarLista();
+            }
+            else
+            {
+                // Realiza a busca no banco de dados
+                List<Tempo> tempos = await App.Db.Search(busca);
                 lst_tempos.ItemsSource = tempos;
             }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro na pesquisa: {ex.Message}", "OK");
+        }
+    }
+
+    // Evento de pull-to-refresh da lista
+    private async void lst_tempos_Refreshing(object sender, EventArgs e)
+    {
+        try
+        {
+            await CarregarLista();
+        }
+        finally
+        {
+            lst_tempos.IsRefreshing = false;
+        }
+    }
+
+    // Menu de contexto - Remover
+    private async void MenuItem_Remover_Clicked(object sender, EventArgs e)
+    {
+        try
+        {
+            MenuItem item = (MenuItem)sender;
+            Tempo tempo = (Tempo)item.BindingContext;
+
+            // Confirma a exclusão
+            bool confirmacao = await DisplayAlert(
+                "Confirmar Exclusão",
+                $"Deseja realmente excluir o tempo de {tempo.cidade}?",
+                "Sim",
+                "Não");
+
+            if (confirmacao)
             {
-                await DisplayAlert("Erro", $"Erro ao carregar tempos: {ex.Message}", "OK");
+                // Remove do banco de dados
+                await App.Db.Delete(tempo.Id);
+
+                // Recarrega a lista
+                await CarregarLista();
+
+                await DisplayAlert("Sucesso", "Tempo removido com sucesso!", "OK");
             }
         }
-
-        // Evento disparado quando o texto da SearchBar é alterado
-        private async void txt_search_TextChanged(object sender, TextChangedEventArgs e)
+        catch (Exception ex)
         {
-            try
-            {
-                string query = e.NewTextValue;
-
-                // Se o texto de busca estiver vazio, carrega todos os tempos
-                if (string.IsNullOrWhiteSpace(query))
-                {
-                    await CarregarListaTempos();
-                }
-                else
-                {
-                    // Busca tempos que contenham o texto digitado na descrição
-                    List<Tempo> resultados = await App.Db.Search(query);
-                    lst_tempos.ItemsSource = resultados;
-                }
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Erro", $"Erro na busca: {ex.Message}", "OK");
-            }
+            await DisplayAlert("Erro", $"Erro ao remover: {ex.Message}", "OK");
         }
+    }
 
-        // Evento disparado quando o usuário puxa a lista para atualizar
-        private async void lst_tempos_Refreshing(object sender, EventArgs e)
+    // Botão para adicionar novo tempo
+    private async void btn_adicionar_Clicked(object sender, EventArgs e)
+    {
+        try
         {
-            try
-            {
-                // Recarrega a lista de tempos
-                await CarregarListaTempos();
-
-                // Para a animação de refresh
-                lst_tempos.IsRefreshing = false;
-            }
-            catch (Exception ex)
-            {
-                lst_tempos.IsRefreshing = false;
-                await DisplayAlert("Erro", $"Erro ao atualizar: {ex.Message}", "OK");
-            }
+            await Navigation.PushAsync(new NovoTempo());
         }
-
-        // Evento disparado quando o item "Remover" é clicado no menu de contexto
-        private async void MenuItem_Clicked(object sender, EventArgs e)
+        catch (Exception ex)
         {
-            try
-            {
-                MenuItem menuItem = (MenuItem)sender;
-                Tempo tempo = (Tempo)menuItem.CommandParameter;
-
-                // Confirma se o usuário realmente quer deletar
-                bool confirmacao = await DisplayAlert(
-                    "Confirmação",
-                    $"Deseja realmente remover o tempo de {tempo.description}?",
-                    "Sim",
-                    "Não"
-                );
-
-                if (confirmacao)
-                {
-                    // Remove o tempo do banco de dados
-                    await App.Db.Delete(tempo.Id);
-
-                    // Recarrega a lista
-                    await CarregarListaTempos();
-
-                    await DisplayAlert("Sucesso", "Tempo removido com sucesso!", "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Erro", $"Erro ao remover tempo: {ex.Message}", "OK");
-            }
+            await DisplayAlert("Erro", $"Erro ao navegar: {ex.Message}", "OK");
         }
     }
 }

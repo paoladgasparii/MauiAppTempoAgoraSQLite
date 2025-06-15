@@ -10,60 +10,69 @@
             <!-- Estilo aplicado aos Labels, centralizando o texto verticalmente -->
             <Style TargetType="Label">
                 <Setter Property="VerticalTextAlignment" Value="Center" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Padding" Value="5,2" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
     <!-- Layout da página, usando StackLayout para empilhar os elementos verticalmente -->
     <StackLayout>
-        <!-- Barra de pesquisa para filtrar os produtos -->
+        <!-- Barra de pesquisa para filtrar os tempos -->
         <SearchBar x:Name="txt_search" 
-                   Margin="-15, 0, 0, 0"
-                   Placeholder="Busca de Tempos" 
+                   Margin="10, 5"
+                   Placeholder="Buscar por cidade ou descrição" 
                    TextChanged="txt_search_TextChanged"/>
 
-        <!-- Contêiner Frame que envolve a lista de produtos -->
-        <Frame Padding="0" Margin="10" VerticalOptions="FillAndExpand">
-            <!-- Lista de produtos com suporte para atualização de pull-to-refresh -->
+        <!-- Contêiner Frame que envolve a lista de tempos -->
+        <Frame Padding="5" Margin="10" VerticalOptions="FillAndExpand" BackgroundColor="white">
+            <!-- Lista de tempos com suporte para atualização de pull-to-refresh -->
             <ListView x:Name="lst_tempos" 
                       IsPullToRefreshEnabled="True"
-                      Refreshing="lst_tempos_Refreshing">
+                      Refreshing="lst_tempos_Refreshing"
+                      HasUnevenRows="True"
+                      SeparatorVisibility="Default"
+                      SeparatorColor="LightGray">
 
                 <!-- Cabeçalho da lista com informações sobre cada coluna -->
                 <ListView.Header>
-                    <Grid ColumnDefinitions="30, 90, 90, 160, 160, 90, 100, 110"
-                        BackgroundColor="{StaticResource Gray100}">
-                        <Label Grid.Column="0" Text="ID" Padding="5" FontAttributes="Bold" />
-                        <Label Grid.Column="1" Text="Longitude" FontAttributes="Bold" />
-                        <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" />
-                        <Label Grid.Column="3" Text="Temperatura Mínima" FontAttributes="Bold" />
-                        <Label Grid.Column="4" Text="Temperatura Máxima" FontAttributes="Bold" />
-                        <Label Grid.Column="5" Text="Descrição" FontAttributes="Bold" />
-                        <Label Grid.Column="6" Text="Nascer do sol" FontAttributes="Bold" />
-                        <Label Grid.Column="7" Text="Pôr do sol" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="40, 100, 80, 80, 80, 80, 120, 60, 60"
+                          BackgroundColor="{StaticResource Primary}"
+                          Padding="5"
+                          HeightRequest="50">
+                        <Label Grid.Column="0" Text="ID" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="1" Text="Cidade" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="2" Text="Temp. Min" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="3" Text="Temp. Max" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="4" Text="Descrição" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="5" Text="Velocidade" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="6" Text="Visibilidade" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="7" Text="Nascer do sol" FontAttributes="Bold" TextColor="White" FontSize="10" />
+                        <Label Grid.Column="8" Text="Pôr do sol" FontAttributes="Bold" TextColor="White" FontSize="10" />
                     </Grid>
                 </ListView.Header>
 
-                <!-- Modelo de item da lista, com as informações de cada produto -->
+                <!-- Modelo de item da lista, com as informações de cada tempo -->
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-                            <!-- Ações de contexto (menu) para cada item da lista -->
-                            <ViewCell.ContextActions>
-                                <MenuItem Text="Remover" Clicked="MenuItem_Clicked" />
-                            </ViewCell.ContextActions>
 
-                            <!-- Exibe os dados do produto em um grid com 5 colunas -->
-                            <Grid ColumnDefinitions="30, 90, 90, 160, 160, 90, 100, 110">
-                                <Label Grid.Column="0" Text="{Binding Id}" />
-                                <Label Grid.Column="1" Text="{Binding lon}"/>
-                                <Label Grid.Column="2" Text="{Binding lat}"/>
-                                <Label Grid.Column="3" Text="{Binding temp_min}"/>
-                                <Label Grid.Column="4" Text="{Binding temp_max}"/>
-                                <Label Grid.Column="5" Text="{Binding description}"/>
-                                <Label Grid.Column="6" Text="{Binding sunrise}"  />
-                                <Label Grid.Column="7" Text="{Binding sunset}" />
-                            </Grid>
+                            <!-- Exibe os dados do tempo em um grid com colunas organizadas -->
+                            <Frame Margin="2" Padding="5" BackgroundColor="white" HasShadow="False" BorderColor="LightGray">
+                                <Grid ColumnDefinitions="40, 100, 80, 80, 80, 80, 120, 60, 60" 
+                                      RowDefinitions="Auto"
+                                      MinimumHeightRequest="40">
+                                    <Label Grid.Column="0" Text="{Binding Id}" FontAttributes="Bold" TextColor="Black" />
+                                    <Label Grid.Column="1" Text="{Binding cidade}" FontAttributes="Bold" TextColor="Black" />
+                                    <Label Grid.Column="2" Text="{Binding temp_min, StringFormat='{0:F1}°C'}" TextColor="Black" />
+                                    <Label Grid.Column="3" Text="{Binding temp_max, StringFormat='{0:F1}°C'}" TextColor="Black" />
+                                    <Label Grid.Column="4" Text="{Binding description}"TextColor="Black" />
+                                    <Label Grid.Column="5" Text="{Binding speed, StringFormat='{0:F1} m/s'}" TextColor="Black" />
+                                    <Label Grid.Column="6" Text="{Binding visibility, StringFormat='{0} m'}" TextColor="Black" />
+                                    <Label Grid.Column="7" Text="{Binding sunrise}" FontSize="10" TextColor="Black"/>
+                                    <Label Grid.Column="8" Text="{Binding sunset}" FontSize="10" TextColor="Black"/>
+                                </Grid>
+                            </Frame>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>

@@ -33,13 +33,13 @@ namespace MauiAppTempoAgoraSQLite.Helpers
         // Método para atualizar um tempo existente no banco de dados
         public Task<List<Tempo>> Update(Tempo t)
         {
-            // Comando SQL para atualizar o tempo com base no ID
-            string sql = "UPDATE Tempo SET lon=?, " +
+            // Comando SQL para atualizar o tempo com base no ID (incluindo cidade)
+            string sql = "UPDATE Tempo SET cidade=?, lon=?, " +
                 "lat=?, temp_min=?, temp_max=?, visibility=?, speed=?, main=?, description=?, sunrise=?, sunset=? WHERE Id=?";
 
             // Executa o comando SQL com os parâmetros fornecidos
             return _conn.QueryAsync<Tempo>(
-                sql, t.lon, t.lat, t.temp_min, t.temp_max, t.visibility, t.speed, t.main, t.description, t.sunrise, t.sunset, t.Id
+                sql, t.cidade, t.lon, t.lat, t.temp_min, t.temp_max, t.visibility, t.speed, t.main, t.description, t.sunrise, t.sunset, t.Id
             );
         }
 
@@ -57,11 +57,11 @@ namespace MauiAppTempoAgoraSQLite.Helpers
             return _conn.Table<Tempo>().ToListAsync();
         }
 
-        // Método para buscar tempos no banco de dados pela descrição
+        // Método para buscar tempos no banco de dados pela descrição ou cidade
         public Task<List<Tempo>> Search(string q)
         {
-            // Comando SQL para realizar a busca de tempos com a descrição que contenha o texto 'q'
-            string sql = "SELECT * FROM Tempo WHERE description LIKE '%" + q + "%'";
+            // Comando SQL para realizar a busca de tempos com a descrição ou cidade que contenha o texto 'q'
+            string sql = "SELECT * FROM Tempo WHERE description LIKE '%" + q + "%' OR cidade LIKE '%" + q + "%'";
 
             // Executa a consulta SQL e retorna os resultados
             return _conn.QueryAsync<Tempo>(sql);
