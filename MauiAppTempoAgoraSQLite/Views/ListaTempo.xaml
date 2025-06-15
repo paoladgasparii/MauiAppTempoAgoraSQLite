@@ -24,12 +24,20 @@
                    Placeholder="Buscar por cidade ou descrição" 
                    TextChanged="txt_search_TextChanged"/>
 
+        <!-- Instrução para o usuário sobre como remover itens -->
+        <Label Text="Toque em um item para removê-lo" 
+               FontSize="12" 
+               TextColor="Gray" 
+               HorizontalOptions="Center" 
+               Margin="0,0,0,5"/>
+
         <!-- Contêiner Frame que envolve a lista de tempos -->
         <Frame Padding="5" Margin="10" VerticalOptions="FillAndExpand" BackgroundColor="white">
             <!-- Lista de tempos com suporte para atualização de pull-to-refresh -->
             <ListView x:Name="lst_tempos" 
                       IsPullToRefreshEnabled="True"
                       Refreshing="lst_tempos_Refreshing"
+                      ItemSelected="lst_tempos_ItemSelected"
                       HasUnevenRows="True"
                       SeparatorVisibility="Default"
                       SeparatorColor="LightGray">
@@ -56,9 +64,12 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-
                             <!-- Exibe os dados do tempo em um grid com colunas organizadas -->
-                            <Frame Margin="2" Padding="5" BackgroundColor="white" HasShadow="False" BorderColor="LightGray">
+                            <Frame Margin="2" 
+                                   Padding="5" 
+                                   BackgroundColor="white" 
+                                   HasShadow="False" 
+                                   BorderColor="LightGray">
                                 <Grid ColumnDefinitions="40, 100, 80, 80, 80, 80, 120, 60, 60" 
                                       RowDefinitions="Auto"
                                       MinimumHeightRequest="40">
@@ -66,7 +77,7 @@
                                     <Label Grid.Column="1" Text="{Binding cidade}" FontAttributes="Bold" TextColor="Black" />
                                     <Label Grid.Column="2" Text="{Binding temp_min, StringFormat='{0:F1}°C'}" TextColor="Black" />
                                     <Label Grid.Column="3" Text="{Binding temp_max, StringFormat='{0:F1}°C'}" TextColor="Black" />
-                                    <Label Grid.Column="4" Text="{Binding description}"TextColor="Black" />
+                                    <Label Grid.Column="4" Text="{Binding description}" TextColor="Black" />
                                     <Label Grid.Column="5" Text="{Binding speed, StringFormat='{0:F1} m/s'}" TextColor="Black" />
                                     <Label Grid.Column="6" Text="{Binding visibility, StringFormat='{0} m'}" TextColor="Black" />
                                     <Label Grid.Column="7" Text="{Binding sunrise}" FontSize="10" TextColor="Black"/>
